@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetoneiraPlus - Sistema de Aluguel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+            padding: 10px 15px;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card.blue {
+            background-color: var(--secondary-color);
+        }
+        
+        .stat-card.green {
+            background-color: #27ae60;
+        }
+        
+        .stat-card.red {
+            background-color: var(--accent-color);
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .badge-paid {
+            background-color: #27ae60;
+        }
+        
+        .badge-unpaid {
+            background-color: #e74c3c;
+        }
+        
+        .badge-returned {
+            background-color: #27ae60;
+        }
+        
+        .badge-rented {
+            background-color: #f39c12;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
+        
+        .logo img {
+            max-width: 80%;
+            margin-bottom: 10px;
+        }
+        
+        .logo h4 {
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Toast styles */
+        .toast {
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast:not(.show) {
+            opacity: 0;
+        }
+        
+        /* Modal de NFe */
+        .nfe-status-badge {
+            font-size: 0.8rem;
+            padding: 0.35em 0.65em;
+        }
+        
+        .chave-nfe {
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="logo">
+                    <h4><i class="bi bi-building"></i> BetoneiraPlus</h4>
+                    <p class="text-muted">Sistema de Aluguel</p>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="dashboard-link">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="products-link">
+                            <i class="bi bi-tools"></i> Produtos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="rentals-link">
+                            <i class="bi bi-cart-check"></i> Aluguéis
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="returns-link">
+                            <i class="bi bi-arrow-return-left"></i> Devoluções
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="debts-link">
+                            <i class="bi bi-credit-card"></i> Dívidas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="reports-link">
+                            <i class="bi bi-graph-up"></i> Relatórios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="invoices-link">
+                            <i class="bi bi-receipt"></i> Notas Fiscais
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section">
+                    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="stat-card blue">
+                                <i class="bi bi-tools" style="font-size: 2rem;"></i>
+                                <h4>Produtos</h4>
+                                <div class="stat-value" id="total-products">0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card green">
+                                <i class="bi bi-cash-coin" style="font-size: 2rem;"></i>
+                                <h4>Receita Total</h4>
+                                <div class="stat-value" id="total-revenue">R$ 0,00</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card red">
+                                <i class="bi bi-credit-card" style="font-size: 2rem;"></i>
+                                <h4>Dívidas</h4>
+                                <div class="stat-value" id="total-debts">R$ 0,00</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="bi bi-cart-check"></i> Aluguéis Recentes</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="recent-rentals">
+                                            <thead>
+                                                <tr>
+                                                    <th>Cliente</th>
+                                                    <th>Produto</th>
+                                                    <th>Status</th>
+                                                    <th>NFe</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Dinamic content -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="bi bi-credit-card"></i> Dívidas Recentes</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="recent-debts">
+                                            <thead>
+                                                <tr>
+                                                    <th>Pessoa</th>
+                                                    <th>Valor</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Dinamic content -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <div id="products-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2><i class="bi bi-tools"></i> Gerenciamento de Produtos</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                            <i class="bi bi-plus-circle"></i> Adicionar Produto
+                        </button>
+                    </div>
+                    <hr>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Lista de Produtos</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="products-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Quantidade</th>
+                                            <th>Valor Diária</th>
+                                            <th>Valor Total Estoque</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dinamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rentals Section -->
+                <div id="rentals-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2><i class="bi bi-cart-check"></i> Gerenciamento de Aluguéis</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRentalModal">
+                            <i class="bi bi-plus-circle"></i> Novo Aluguel
+                        </button>
+                    </div>
+                    <hr>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Histórico de Aluguéis</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="rentals-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Produto</th>
+                                            <th>Data</th>
+                                            <th>Dias</th>
+                                            <th>Valor Total</th>
+                                            <th>Pagamento</th>
+                                            <th>Status</th>
+                                            <th>NFe</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dinamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Returns Section -->
+                <div id="returns-section" style="display: none;">
+                    <h2><i class="bi bi-arrow-return-left"></i> Registrar Devolução</h2>
+                    <hr>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Aluguéis Ativos</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="active-rentals">
+                                    <thead>
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Produto</th>
+                                            <th>Data Aluguel</th>
+                                            <th>Dias</th>
+                                            <th>Valor Total</th>
+                                            <th>Pagamento</th>
+                                            <th>NFe</th>
+                                            <th>Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dinamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Debts Section -->
+                <div id="debts-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2><i class="bi bi-credit-card"></i> Gerenciamento de Dívidas</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDebtModal">
+                            <i class="bi bi-plus-circle"></i> Nova Dívida
+                        </button>
+                    </div>
+                    <hr>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Lista de Dívidas</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="debts-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pessoa</th>
+                                            <th>Descrição</th>
+                                            <th>Data</th>
+                                            <th>Valor Total</th>
+                                            <th>Valor Pago</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dinamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <div id="reports-section" style="display: none;">
+                    <h2><i class="bi bi-graph-up"></i> Relatórios Financeiros</h2>
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Resumo de Aluguéis</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="rentalsChart" height="200"></canvas>
+                                    <div class="mt-3">
+                                        <p><strong>Total de Aluguéis:</strong> <span id="total-rentals">R$ 0,00</span></p>
+                                        <p><strong>Recebidos:</strong> <span id="paid-rentals">R$ 0,00</span></p>
+                                        <p><strong>Em Aberto:</strong> <span id="unpaid-rentals">R$ 0,00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Resumo de Dívidas</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="debtsChart" height="200"></canvas>
+                                    <div class="mt-3">
+                                        <p><strong>Total de Dívidas:</strong> <span id="total-debts-report">R$ 0,00</span></p>
+                                        <p><strong>Pagas:</strong> <span id="paid-debts">R$ 0,00</span></p>
+                                        <p><strong>Em Aberto:</strong> <span id="unpaid-debts">R$ 0,00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Saldo Financeiro</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-success">
+                                <h4><i class="bi bi-cash-stack"></i> Saldo Final: <span id="final-balance">R$ 0,00</span></h4>
+                            </div>
+                            <button class="btn btn-primary" id="generate-report">
+                                <i class="bi bi-file-earmark-text"></i> Gerar Relatório Completo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invoices Section -->
+                <div id="invoices-section" style="display: none;">
+                    <h2><i class="bi bi-receipt"></i> Notas Fiscais</h2>
+                    <hr>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Histórico de Notas Fiscais</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="invoices-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Número</th>
+                                            <th>Cliente</th>
+                                            <th>Valor</th>
+                                            <th>Data</th>
+                                            <th>Status</th>
+                                            <th>Chave</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dinamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProductModalLabel"><i class="bi bi-plus-circle"></i> Adicionar Produto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="product-form">
+                        <div class="mb-3">
+                            <label for="product-name" class="form-label">Nome do Produto</label>
+                            <input type="text" class="form-control" id="product-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="product-quantity" class="form-label">Quantidade Disponível</label>
+                            <input type="number" class="form-control" id="product-quantity" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="product-daily-rate" class="form-label">Valor da Diária (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="product-daily-rate" min="0" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-product">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Rental Modal -->
+    <div class="modal fade" id="addRentalModal" tabindex="-1" aria-labelledby="addRentalModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRentalModalLabel"><i class="bi bi-cart-plus"></i> Novo Aluguel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rental-form">
+                        <div class="mb-3">
+                            <label for="rental-client" class="form-label">Cliente</label>
+                            <input type="text" class="form-control" id="rental-client" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rental-product" class="form-label">Produto</label>
+                            <select class="form-select" id="rental-product" required>
+                                <option value="">Selecione um produto</option>
+                                <!-- Dinamic content -->
+                            </select>
+                            <div class="form-text" id="product-info">Disponível: 0 | Diária: R$ 0,00</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rental-days" class="form-label">Dias de Aluguel</label>
+                            <input type="number" class="form-control" id="rental-days" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rental-quantity" class="form-label">Quantidade</label>
+                            <input type="number" class="form-control" id="rental-quantity" min="1" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rental-paid">
+                            <label class="form-check-label" for="rental-paid">Pagamento realizado</label>
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>Valor Total:</strong> <span id="rental-total">R$ 0,00</span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-rental">Registrar Aluguel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Debt Modal -->
+    <div class="modal fade" id="addDebtModal" tabindex="-1" aria-labelledby="addDebtModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addDebtModalLabel"><i class="bi bi-credit-card"></i> Nova Dívida</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="debt-form">
+                        <div class="mb-3">
+                            <label for="debt-person" class="form-label">Pessoa</label>
+                            <input type="text" class="form-control" id="debt-person" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="debt-description" class="form-label">Descrição</label>
+                            <input type="text" class="form-control" id="debt-description" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="debt-total" class="form-label">Valor Total (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="debt-total" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="debt-paid" class="form-label">Valor Pago (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="debt-paid" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="debt-date" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="debt-date" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="debt-is-paid">
+                            <label class="form-check-label" for="debt-is-paid">Dívida quitada</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-debt">Salvar Dívida</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel"><i class="bi bi-cash"></i> Registrar Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="payment-form">
+                        <input type="hidden" id="payment-debt-id">
+                        <div class="mb-3">
+                            <label for="payment-person" class="form-label">Pessoa</label>
+                            <input type="text" class="form-control" id="payment-person" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment-description" class="form-label">Descrição</label>
+                            <input type="text" class="form-control" id="payment-description" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment-total" class="form-label">Valor Total (R$)</label>
+                            <input type="text" class="form-control" id="payment-total" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment-already-paid" class="form-label">Valor Já Pago (R$)</label>
+                            <input type="text" class="form-control" id="payment-already-paid" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment-amount" class="form-label">Valor do Pagamento (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="payment-amount" min="0" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-payment">Registrar Pagamento</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Rental Modal -->
+    <div class="modal fade" id="paymentRentalModal" tabindex="-1" aria-labelledby="paymentRentalModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentRentalModalLabel"><i class="bi bi-cash"></i> Registrar Pagamento de Aluguel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="payment-rental-form">
+                        <input type="hidden" id="payment-rental-id">
+                        <div class="mb-3">
+                            <label for="payment-rental-client" class="form-label">Cliente</label>
+                            <input type="text" class="form-control" id="payment-rental-client" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment-rental-product" class="form-label">Produto</label>
+                            <input type="text" class="form-control" id="payment-rental-product" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment-rental-total" class="form-label">Valor Total (R$)</label>
+                            <input type="text" class="form-control" id="payment-rental-total" readonly>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="payment-rental-full">
+                            <label class="form-check-label" for="payment-rental-full">Pagamento total</label>
+                        </div>
+                        <div class="mb-3" id="partial-payment-container" style="display: none;">
+                            <label for="payment-rental-amount" class="form-label">Valor do Pagamento (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="payment-rental-amount" min="0">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-rental-payment">Registrar Pagamento</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="returnModalLabel"><i class="bi bi-arrow-return-left"></i> Registrar Devolução</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="return-form">
+                        <input type="hidden" id="return-rental-id">
+                        <div class="mb-3">
+                            <label for="return-client" class="form-label">Cliente</label>
+                            <input type="text" class="form-control" id="return-client" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="return-product" class="form-label">Produto</label>
+                            <input type="text" class="form-control" id="return-product" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="return-date" class="form-label">Data do Aluguel</label>
+                            <input type="text" class="form-control" id="return-date" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="return-days" class="form-label">Dias Alugados</label>
+                            <input type="text" class="form-control" id="return-days" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="return-total" class="form-label">Valor Total</label>
+                            <input type="text" class="form-control" id="return-total" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="return-payment" class="form-label">Status do Pagamento</label>
+                            <input type="text" class="form-control" id="return-payment" readonly>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirm-return">Confirmar Devolução</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div class="modal fade" id="realInvoiceModal" tabindex="-1" aria-labelledby="realInvoiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="realInvoiceModalLabel"><i class="bi bi-receipt"></i> Emissão de NFe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="invoice-step-1">
+                        <form id="real-invoice-form">
+                            <input type="hidden" id="real-invoice-rental-id">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="real-invoice-client" class="form-label">Cliente</label>
+                                    <input type="text" class="form-control" id="real-invoice-client" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="real-invoice-client-doc" class="form-label">CPF/CNPJ</label>
+                                    <input type="text" class="form-control" id="real-invoice-client-doc" required>
+                                    <div class="form-text" id="client-type"></div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="real-invoice-product" class="form-label">Produto</label>
+                                    <input type="text" class="form-control" id="real-invoice-product" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="real-invoice-cfop" class="form-label">CFOP</label>
+                                    <select class="form-select" id="real-invoice-cfop" required>
+                                        <option value="5656">5656 - Locação de bens</option>
+                                        <option value="5657">5657 - Locação de bens com prestação de serviços</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="real-invoice-days" class="form-label">Dias</label>
+                                    <input type="number" class="form-control" id="real-invoice-days" readonly>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="real-invoice-quantity" class="form-label">Quantidade</label>
+                                    <input type="number" class="form-control" id="real-invoice-quantity" readonly>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="real-invoice-total" class="form-label">Valor Total</label>
+                                    <input type="text" class="form-control" id="real-invoice-total" readonly>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="real-invoice-obs" class="form-label">Informações Adicionais</label>
+                                <textarea class="form-control" id="real-invoice-obs" rows="2"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="invoice-step-2" style="display: none;">
+                        <div class="text-center my-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Processando...</span>
+                            </div>
+                            <h5 class="mt-3" id="invoice-status">Enviando dados para SEFAZ</h5>
+                            <div class="progress mt-3">
+                                <div id="invoice-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="invoice-step-3" style="display: none;">
+                        <div class="alert alert-success text-center">
+                            <h4><i class="bi bi-check-circle"></i> NFe emitida com sucesso!</h4>
+                            <div class="mt-3">
+                                <p><strong>Número:</strong> <span id="invoice-number"></span></p>
+                                <p><strong>Chave de Acesso:</strong> <span id="invoice-key" class="chave-nfe"></span></p>
+                                <p><strong>Data de Emissão:</strong> <span id="invoice-emission-date"></span></p>
+                            </div>
+                            <div class="mt-3">
+                                <button id="download-invoice" class="btn btn-primary">
+                                    <i class="bi bi-download"></i> Baixar DANFE
+                                </button>
+                                <button id="send-invoice-email" class="btn btn-secondary">
+                                    <i class="bi bi-envelope"></i> Enviar por E-mail
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="invoice-cancel-btn" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="invoice-generate-btn">Emitir NFe</button>
+                    <button type="button" class="btn btn-success" id="invoice-finish-btn" style="display: none;" data-bs-dismiss="modal">Concluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Invoice Modal -->
+    <div class="modal fade" id="viewInvoiceModal" tabindex="-1" aria-labelledby="viewInvoiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewInvoiceModalLabel"><i class="bi bi-receipt"></i> Detalhes da Nota Fiscal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Número:</strong> <span id="view-invoice-number"></span></p>
+                            <p><strong>Série:</strong> <span id="view-invoice-series"></span></p>
+                            <p><strong>Data de Emissão:</strong> <span id="view-invoice-date"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong> <span id="view-invoice-status" class="badge nfe-status-badge"></span></p>
+                            <p><strong>Protocolo:</strong> <span id="view-invoice-protocol"></span></p>
+                            <p><strong>Valor Total:</strong> <span id="view-invoice-total"></span></p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>Chave de Acesso:</strong></p>
+                        <p id="view-invoice-key" class="chave-nfe bg-light p-2 rounded"></p>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>Cliente:</strong> <span id="view-invoice-client"></span></p>
+                        <p><strong>CPF/CNPJ:</strong> <span id="view-invoice-client-doc"></span></p>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>Produto/Serviço:</strong> <span id="view-invoice-product"></span></p>
+                        <p><strong>Valor Unitário:</strong> <span id="view-invoice-unit-value"></span></p>
+                        <p><strong>Quantidade:</strong> <span id="view-invoice-quantity"></span></p>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>Informações Adicionais:</strong></p>
+                        <p id="view-invoice-obs" class="bg-light p-2 rounded"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="view-invoice-download">
+                        <i class="bi bi-download"></i> Baixar DANFE
+                    </button>
+                    <button type="button" class="btn btn-info" id="view-invoice-xml">
+                        <i class="bi bi-file-code"></i> Baixar XML
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
+    <script>
+        // Banco de dados local usando localStorage
+        const DB = {
+            products: JSON.parse(localStorage.getItem('products')) || [],
+            rentals: JSON.parse(localStorage.getItem('rentals')) || [],
+            debts: JSON.parse(localStorage.getItem('debts')) || [],
+            
+            save: function() {
+                localStorage.setItem('products', JSON.stringify(this.products));
+                localStorage.setItem('rentals', JSON.stringify(this.rentals));
+                localStorage.setItem('debts', JSON.stringify(this.debts));
+                console.log('Dados salvos no localStorage');
+            },
+            
+            // Métodos para gerar IDs únicos
+            nextProductId: function() {
+                return this.products.length > 0 ? Math.max(...this.products.map(p => p.id)) + 1 : 1;
+            },
+            nextRentalId: function() {
+                return this.rentals.length > 0 ? Math.max(...this.rentals.map(r => r.id)) + 1 : 1;
+            },
+            nextDebtId: function() {
+                return this.debts.length > 0 ? Math.max(...this.debts.map(d => d.id)) + 1 : 1;
+            }
+        };
+
+        // Variáveis globais para a integração
+        let fiscalFlexToken = '';
+        let currentNFeData = null;
+
+        // Configuração inicial da integração
+        async function initializeFiscalFlexIntegration() {
+            try {
+                // Obter token de acesso da API do Fiscal Flex
+                const response = await fetch('https://api.fiscalflex.com.br/autenticacao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': 'SUA_CHAVE_DE_API_AQUI' // Substitua pela sua chave real
+                    },
+                    body: JSON.stringify({
+                        client_id: 'SEU_CLIENT_ID',
+                        client_secret: 'SEU_CLIENT_SECRET'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.access_token) {
+                    fiscalFlexToken = data.access_token;
+                    console.log('Autenticado com sucesso no Fiscal Flex');
+                } else {
+                    console.error('Falha na autenticação com Fiscal Flex');
+                }
+            } catch (error) {
+                console.error('Erro na integração com Fiscal Flex:', error);
+            }
+        }
+
+        // Elementos da interface
+        const sections = {
+            dashboard: document.getElementById('dashboard-section'),
+            products: document.getElementById('products-section'),
+            rentals: document.getElementById('rentals-section'),
+            returns: document.getElementById('returns-section'),
+            debts: document.getElementById('debts-section'),
+            reports: document.getElementById('reports-section'),
+            invoices: document.getElementById('invoices-section')
+        };
+        
+        const navLinks = {
+            dashboard: document.getElementById('dashboard-link'),
+            products: document.getElementById('products-link'),
+            rentals: document.getElementById('rentals-link'),
+            returns: document.getElementById('returns-link'),
+            debts: document.getElementById('debts-link'),
+            reports: document.getElementById('reports-link'),
+            invoices: document.getElementById('invoices-link')
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            setupNavigation();
+            setupModals();
+            showSection('dashboard');
+            loadData();
+            initializeFiscalFlexIntegration();
+        });
+
+        // Configuração da navegação
+        function setupNavigation() {
+            for (const [sectionName, link] of Object.entries(navLinks)) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(sectionName);
+                    if (sectionName === 'dashboard') refreshDashboard();
+                    if (sectionName === 'invoices') updateInvoicesTable();
+                });
+            }
+        }
+
+        // Mostra uma seção específica
+        function showSection(sectionName) {
+            for (const section of Object.values(sections)) {
+                section.style.display = 'none';
+            }
+            
+            for (const link of Object.values(navLinks)) {
+                link.classList.remove('active');
+            }
+            
+            sections[sectionName].style.display = 'block';
+            navLinks[sectionName].classList.add('active');
+        }
+
+        // Carrega todos os dados iniciais
+        function loadData() {
+            updateProductsTable(DB.products);
+            updateProductDropdown(DB.products);
+            updateRentalsTable(DB.rentals);
+            updateActiveRentalsTable(DB.rentals.filter(r => !r.devolvido));
+            updateDebtsTable(DB.debts);
+            refreshDashboard();
+        }
+
+        // Atualiza o dashboard
+        function refreshDashboard() {
+            // Total de produtos
+            document.getElementById('total-products').textContent = DB.products.length;
+            
+            // Receita de aluguéis
+            const totalRevenue = DB.rentals.reduce((sum, r) => sum + r.valorTotal, 0);
+            const recebidos = DB.rentals.filter(a => a.pago).reduce((sum, r) => sum + r.valorTotal, 0);
+            
+            document.getElementById('total-revenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('paid-rentals').textContent = formatCurrency(recebidos);
+            document.getElementById('unpaid-rentals').textContent = formatCurrency(totalRevenue - recebidos);
+            
+            // Tabela de aluguéis recentes
+            const recentRentals = DB.rentals.slice().reverse().slice(0, 5);
+            updateRecentTable('recent-rentals', recentRentals, r => [
+                r.cliente, 
+                r.produto,
+                `<span class="badge ${r.pago ? 'bg-success' : 'bg-warning'}">${r.pago ? 'Pago' : 'Aberto'}</span>`,
+                r.notaFiscal ? `<span class="badge ${r.notaFiscal.status === 'autorizada' ? 'bg-success' : 'bg-warning'}">${r.notaFiscal.status === 'autorizada' ? 'NFe OK' : 'NFe Pendente'}</span>` : '<button class="btn btn-sm btn-outline-primary request-invoice" data-id="${r.id}"><i class="bi bi-receipt"></i></button>'
+            ]);
+            
+            // Dívidas
+            const totalDebts = DB.debts.reduce((sum, d) => sum + d.valorTotal, 0);
+            const totalPaid = DB.debts.reduce((sum, d) => sum + d.valorPago, 0);
+            
+            document.getElementById('total-debts').textContent = formatCurrency(totalDebts);
+            document.getElementById('total-debts-report').textContent = formatCurrency(totalDebts);
+            document.getElementById('paid-debts').textContent = formatCurrency(totalPaid);
+            document.getElementById('unpaid-debts').textContent = formatCurrency(totalDebts - totalPaid);
+            
+            // Tabela de dívidas recentes
+            const recentDebts = DB.debts.slice().reverse().slice(0, 5);
+            updateRecentTable('recent-debts', recentDebts, d => [
+                d.pessoa, 
+                formatCurrency(d.valorTotal),
+                `<span class="badge ${d.pago ? 'bg-success' : 'bg-danger'}">${d.pago ? 'Pago' : 'Aberto'}</span>`
+            ]);
+            
+            // Saldo final
+            const saldo = recebidos - totalPaid;
+            document.getElementById('final-balance').textContent = formatCurrency(saldo);
+        }
+
+        // Atualiza uma tabela de dados recentes
+        function updateRecentTable(tableId, items, rowMapper) {
+            const table = document.getElementById(tableId).querySelector('tbody');
+            table.innerHTML = '';
+            
+            for (const item of items) {
+                const row = document.createElement('tr');
+                row.innerHTML = rowMapper(item).map(cell => `<td>${cell}</td>`).join('');
+                table.appendChild(row);
+            }
+        }
+
+        // Configura os modais e seus eventos
+        function setupModals() {
+            // Modal de produto
+            document.getElementById('save-product').addEventListener('click', function() {
+                const produto = {
+                    id: DB.nextProductId(),
+                    nome: document.getElementById('product-name').value,
+                    quantidadeDisponivel: parseInt(document.getElementById('product-quantity').value),
+                    valorDiaria: parseFloat(document.getElementById('product-daily-rate').value)
+                };
+                
+                DB.products.push(produto);
+                DB.save();
+                
+                loadData();
+                bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
+                document.getElementById('product-form').reset();
+                showToast('Produto adicionado com sucesso!');
+            });
+            
+            // Modal de aluguel
+            document.getElementById('rental-product').addEventListener('change', function() {
+                const productName = this.value;
+                if (!productName) return;
+                
+                const produto = DB.products.find(p => p.nome === productName);
+                if (produto) {
+                    document.getElementById('product-info').textContent = 
+                        `Disponível: ${produto.quantidadeDisponivel} | Diária: ${formatCurrency(produto.valorDiaria)}`;
+                    updateRentalTotal();
+                }
+            });
+            
+            document.getElementById('rental-days').addEventListener('input', updateRentalTotal);
+            document.getElementById('rental-quantity').addEventListener('input', updateRentalTotal);
+            
+            document.getElementById('save-rental').addEventListener('click', function() {
+                const productName = document.getElementById('rental-product').value;
+                const product = DB.products.find(p => p.nome === productName);
+                
+                if (!product) {
+                    showToast('Produto não encontrado!', 'danger');
+                    return;
+                }
+                
+                if (product.quantidadeDisponivel < parseInt(document.getElementById('rental-quantity').value)) {
+                    showToast('Quantidade indisponível!', 'danger');
+                    return;
+                }
+                
+                const aluguel = {
+                    id: DB.nextRentalId(),
+                    cliente: document.getElementById('rental-client').value,
+                    produto: productName,
+                    dias: parseInt(document.getElementById('rental-days').value),
+                    quantidade: parseInt(document.getElementById('rental-quantity').value),
+                    valorDiaria: product.valorDiaria,
+                    valorTotal: product.valorDiaria * parseInt(document.getElementById('rental-days').value) * parseInt(document.getElementById('rental-quantity').value),
+                    pago: document.getElementById('rental-paid').checked,
+                    data: new Date().toISOString(),
+                    devolvido: false,
+                    notaFiscal: null
+                };
+                
+                // Atualizar quantidade disponível
+                product.quantidadeDisponivel -= aluguel.quantidade;
+                
+                DB.rentals.push(aluguel);
+                DB.save();
+                
+                loadData();
+                bootstrap.Modal.getInstance(document.getElementById('addRentalModal')).hide();
+                document.getElementById('rental-form').reset();
+                showToast('Aluguel registrado com sucesso!');
+            });
+            
+            // Modal de dívida
+            document.getElementById('save-debt').addEventListener('click', function() {
+                const divida = {
+                    id: DB.nextDebtId(),
+                    pessoa: document.getElementById('debt-person').value,
+                    descricao: document.getElementById('debt-description').value,
+                    valorTotal: parseFloat(document.getElementById('debt-total').value),
+                    valorPago: parseFloat(document.getElementById('debt-paid').value),
+                    data: document.getElementById('debt-date').value || new Date().toISOString(),
+                    pago: document.getElementById('debt-is-paid').checked
+                };
+                
+                DB.debts.push(divida);
+                DB.save();
+                
+                loadData();
+                bootstrap.Modal.getInstance(document.getElementById('addDebtModal')).hide();
+                document.getElementById('debt-form').reset();
+                showToast('Dívida registrada com sucesso!');
+            });
+            
+            // Modal de pagamento de dívida
+            document.getElementById('save-payment').addEventListener('click', function() {
+                const id = parseInt(document.getElementById('payment-debt-id').value);
+                const divida = DB.debts.find(d => d.id === id);
+                const valor = parseFloat(document.getElementById('payment-amount').value);
+                
+                if (divida) {
+                    divida.valorPago += valor;
+                    divida.pago = divida.valorPago >= divida.valorTotal;
+                    DB.save();
+                    loadData();
+                    bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                    document.getElementById('payment-form').reset();
+                    showToast('Pagamento registrado com sucesso!');
+                }
+            });
+            
+            // Modal de pagamento de aluguel
+            document.getElementById('save-rental-payment').addEventListener('click', function() {
+                const id = parseInt(document.getElementById('payment-rental-id').value);
+                const aluguel = DB.rentals.find(r => r.id === id);
+                const isFullPayment = document.getElementById('payment-rental-full').checked;
+                const amount = isFullPayment ? aluguel.valorTotal : 
+                    parseFloat(document.getElementById('payment-rental-amount').value);
+                
+                if (!isFullPayment && (!amount || amount <= 0)) {
+                    showToast('Informe um valor válido para o pagamento!', 'danger');
+                    return;
+                }
+                
+                aluguel.pago = isFullPayment;
+                DB.save();
+                loadData();
+                bootstrap.Modal.getInstance(document.getElementById('paymentRentalModal')).hide();
+                showToast(`Pagamento de ${formatCurrency(amount)} registrado com sucesso!`);
+            });
+            
+            // Modal de devolução
+            document.getElementById('confirm-return').addEventListener('click', function() {
+                const id = parseInt(document.getElementById('return-rental-id').value);
+                const aluguel = DB.rentals.find(r => r.id === id);
+                
+                if (aluguel) {
+                    if (!aluguel.pago && !confirm('Este aluguel não foi pago. Deseja realmente registrar a devolução?')) {
+                        return;
+                    }
+                    
+                    aluguel.devolvido = true;
+                    const product = DB.products.find(p => p.nome === aluguel.produto);
+                    if (product) {
+                        product.quantidadeDisponivel += aluguel.quantidade;
+                    }
+                    DB.save();
+                    loadData();
+                    bootstrap.Modal.getInstance(document.getElementById('returnModal')).hide();
+                    showToast('Devolução registrada com sucesso!');
+                }
+            });
+            
+            // Gerar relatório
+            document.getElementById('generate-report').addEventListener('click', function() {
+                // Cria um relatório simples em formato de texto
+                const relatorio = `
+                    Relatório Financeiro - ${new Date().toLocaleDateString('pt-BR')}
+                    ===================================
+                    
+                    Total de Produtos: ${DB.products.length}
+                    Total de Aluguéis: ${DB.rentals.length}
+                    Receita Total: ${formatCurrency(DB.rentals.reduce((sum, r) => sum + r.valorTotal, 0))}
+                    Dívidas Totais: ${formatCurrency(DB.debts.reduce((sum, d) => sum + d.valorTotal, 0))}
+                    Saldo Final: ${document.getElementById('final-balance').textContent}
+                    
+                    Últimos Aluguéis:
+                    ${DB.rentals.slice().reverse().slice(0, 5).map(r => 
+                        `${r.cliente} - ${r.produto} - ${formatCurrency(r.valorTotal)} - ${r.pago ? 'Pago' : 'Aberto'}`).join('\n')}
+                    
+                    Últimas Dívidas:
+                    ${DB.debts.slice().reverse().slice(0, 5).map(d => 
+                        `${d.pessoa} - ${d.descricao} - ${formatCurrency(d.valorTotal)} - ${d.pago ? 'Pago' : 'Aberto'}`).join('\n')}
+                `;
+                
+                // Cria um blob com o relatório
+                const blob = new Blob([relatorio], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `relatorio_${new Date().toISOString().slice(0, 10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('Relatório gerado com sucesso!');
+            });
+            
+            // Configura eventos para edição e exclusão de produtos
+            document.addEventListener('click', function(e) {
+                // Editar produto
+                if (e.target.closest('.edit-product')) {
+                    const id = parseInt(e.target.closest('.edit-product').getAttribute('data-id'));
+                    const produto = DB.products.find(p => p.id === id);
+                    
+                    if (produto) {
+                        document.getElementById('product-name').value = produto.nome;
+                        document.getElementById('product-quantity').value = produto.quantidadeDisponivel;
+                        document.getElementById('product-daily-rate').value = produto.valorDiaria;
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('addProductModal'));
+                        modal.show();
+                        
+                        // Alterar o botão Salvar para Atualizar
+                        const saveBtn = document.getElementById('save-product');
+                        saveBtn.textContent = 'Atualizar';
+                        saveBtn.onclick = function() {
+                            produto.nome = document.getElementById('product-name').value;
+                            produto.quantidadeDisponivel = parseInt(document.getElementById('product-quantity').value);
+                            produto.valorDiaria = parseFloat(document.getElementById('product-daily-rate').value);
+                            
+                            DB.save();
+                            loadData();
+                            modal.hide();
+                            document.getElementById('product-form').reset();
+                            showToast('Produto atualizado com sucesso!');
+                            
+                            // Restaurar o botão Salvar
+                            saveBtn.textContent = 'Salvar';
+                            saveBtn.onclick = originalSaveProductFunction;
+                        };
+                    }
+                }
+                
+                // Excluir produto
+                if (e.target.closest('.delete-product')) {
+                    const id = parseInt(e.target.closest('.delete-product').getAttribute('data-id'));
+                    if (confirm('Tem certeza que deseja excluir este produto?')) {
+                        DB.products = DB.products.filter(p => p.id !== id);
+                        DB.save();
+                        loadData();
+                        showToast('Produto excluído com sucesso!');
+                    }
+                }
+                
+                // Editar dívida
+                if (e.target.closest('.edit-debt')) {
+                    const id = parseInt(e.target.closest('.edit-debt').getAttribute('data-id'));
+                    const divida = DB.debts.find(d => d.id === id);
+                    
+                    if (divida) {
+                        document.getElementById('debt-person').value = divida.pessoa;
+                        document.getElementById('debt-description').value = divida.descricao;
+                        document.getElementById('debt-total').value = divida.valorTotal;
+                        document.getElementById('debt-paid').value = divida.valorPago;
+                        document.getElementById('debt-date').value = divida.data.split('T')[0];
+                        document.getElementById('debt-is-paid').checked = divida.pago;
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('addDebtModal'));
+                        modal.show();
+                        
+                        // Altera o título do modal
+                        document.getElementById('addDebtModalLabel').innerHTML = '<i class="bi bi-credit-card"></i> Editar Dívida';
+                        
+                        // Altera o botão de salvar para atualizar
+                        const saveBtn = document.getElementById('save-debt');
+                        saveBtn.textContent = 'Atualizar';
+                        saveBtn.onclick = function() {
+                            divida.pessoa = document.getElementById('debt-person').value;
+                            divida.descricao = document.getElementById('debt-description').value;
+                            divida.valorTotal = parseFloat(document.getElementById('debt-total').value);
+                            divida.valorPago = parseFloat(document.getElementById('debt-paid').value);
+                            divida.data = document.getElementById('debt-date').value || new Date().toISOString();
+                            divida.pago = document.getElementById('debt-is-paid').checked;
+                            
+                            DB.save();
+                            loadData();
+                            modal.hide();
+                            document.getElementById('debt-form').reset();
+                            showToast('Dívida atualizada com sucesso!');
+                            
+                            // Restaura o modal para adição
+                            document.getElementById('addDebtModalLabel').innerHTML = '<i class="bi bi-credit-card"></i> Nova Dívida';
+                            saveBtn.textContent = 'Salvar';
+                            saveBtn.onclick = originalSaveDebtFunction;
+                        };
+                    }
+                }
+                
+                // Excluir dívida
+                if (e.target.closest('.delete-debt')) {
+                    const id = parseInt(e.target.closest('.delete-debt').getAttribute('data-id'));
+                    if (confirm('Tem certeza que deseja excluir esta dívida?')) {
+                        DB.debts = DB.debts.filter(d => d.id !== id);
+                        DB.save();
+                        loadData();
+                        showToast('Dívida excluída com sucesso!');
+                    }
+                }
+                
+                // Excluir aluguel
+                if (e.target.closest('.delete-rental')) {
+                    const id = parseInt(e.target.closest('.delete-rental').getAttribute('data-id'));
+                    if (confirm('Tem certeza que deseja excluir este aluguel?')) {
+                        DB.rentals = DB.rentals.filter(r => r.id !== id);
+                        DB.save();
+                        loadData();
+                        showToast('Aluguel excluído com sucesso!');
+                    }
+                }
+                
+                // Solicitar emissão de NFe
+                if (e.target.closest('.request-invoice') || e.target.closest('.generate-real-invoice')) {
+                    const btn = e.target.closest('.request-invoice') || e.target.closest('.generate-real-invoice');
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel) showRealInvoiceModal(aluguel);
+                }
+                
+                // Visualizar NFe
+                if (e.target.closest('.view-invoice')) {
+                    const id = parseInt(e.target.closest('.view-invoice').getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel && aluguel.notaFiscal) showViewInvoiceModal(aluguel);
+                }
+            });
+            
+            // Salvar a função original do botão Salvar produto
+            const originalSaveProductFunction = document.getElementById('save-product').onclick;
+            
+            // Salvar a função original do botão Salvar dívida
+            const originalSaveDebtFunction = document.getElementById('save-debt').onclick;
+            
+            // Configurar eventos do modal de NFe
+            document.getElementById('invoice-generate-btn').addEventListener('click', emitirNFeReal);
+            
+            document.getElementById('download-invoice').addEventListener('click', function() {
+                if (currentNFeData && currentNFeData.danfe) {
+                    // Criar link para download do DANFE
+                    const link = document.createElement('a');
+                    link.href = currentNFeData.danfe;
+                    link.download = `DANFE-${currentNFeData.numero}.pdf`;
+                    link.click();
+                }
+            });
+            
+            document.getElementById('send-invoice-email').addEventListener('click', async function() {
+                if (currentNFeData && currentNFeData.protocolo) {
+                    try {
+                        const email = prompt('Para qual e-mail deseja enviar a NFe?');
+                        if (!email) return;
+                        
+                        const response = await fetch('https://api.fiscalflex.com.br/nfe/email', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${fiscalFlexToken}`
+                            },
+                            body: JSON.stringify({
+                                protocolo: currentNFeData.protocolo,
+                                email: email
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            showToast('NFe enviada por e-mail com sucesso!');
+                        } else {
+                            throw new Error(result.message || 'Erro ao enviar e-mail');
+                        }
+                    } catch (error) {
+                        showToast(`Erro ao enviar e-mail: ${error.message}`, 'danger');
+                    }
+                }
+            });
+            
+            // Configurar eventos do modal de visualização de NFe
+            document.getElementById('view-invoice-download').addEventListener('click', function() {
+                if (currentNFeData && currentNFeData.danfe) {
+                    const link = document.createElement('a');
+                    link.href = currentNFeData.danfe;
+                    link.download = `DANFE-${currentNFeData.numero}.pdf`;
+                    link.click();
+                }
+            });
+            
+            document.getElementById('view-invoice-xml').addEventListener('click', function() {
+                if (currentNFeData && currentNFeData.xml) {
+                    const link = document.createElement('a');
+                    link.href = currentNFeData.xml;
+                    link.download = `NFe-${currentNFeData.numero}.xml`;
+                    link.click();
+                }
+            });
+        }
+
+        // Atualiza o valor total do aluguel no modal
+        function updateRentalTotal() {
+            const productName = document.getElementById('rental-product').value;
+            const days = parseInt(document.getElementById('rental-days').value) || 0;
+            const quantity = parseInt(document.getElementById('rental-quantity').value) || 0;
+            
+            if (!productName) {
+                document.getElementById('rental-total').textContent = 'R$ 0,00';
+                return;
+            }
+            
+            const produto = DB.products.find(p => p.nome === productName);
+            if (produto) {
+                const total = days * produto.valorDiaria * quantity;
+                document.getElementById('rental-total').textContent = formatCurrency(total);
+            }
+        }
+
+        // Atualiza a tabela de produtos
+        function updateProductsTable(produtos) {
+            const table = document.getElementById('products-table').querySelector('tbody');
+            table.innerHTML = '';
+            
+            for (const p of produtos) {
+                const totalValue = p.quantidadeDisponivel * p.valorDiaria;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${p.nome}</td>
+                    <td>${p.quantidadeDisponivel}</td>
+                    <td>${formatCurrency(p.valorDiaria)}</td>
+                    <td>${formatCurrency(totalValue)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-product" data-id="${p.id}" title="Editar produto">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-product" data-id="${p.id}" title="Excluir produto">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                table.appendChild(row);
+            }
+        }
+
+        // Atualiza o dropdown de produtos no modal de aluguel
+        function updateProductDropdown(produtos) {
+            const dropdown = document.getElementById('rental-product');
+            dropdown.innerHTML = '<option value="">Selecione um produto</option>';
+            
+            for (const p of produtos) {
+                const option = document.createElement('option');
+                option.value = p.nome;
+                option.textContent = p.nome;
+                dropdown.appendChild(option);
+            }
+        }
+
+        // Atualiza a tabela de aluguéis
+        function updateRentalsTable(alugueis) {
+            const table = document.getElementById('rentals-table').querySelector('tbody');
+            table.innerHTML = '';
+            
+            for (const a of alugueis) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${a.cliente}</td>
+                    <td>${a.produto}</td>
+                    <td>${formatDate(a.data)}</td>
+                    <td>${a.dias}</td>
+                    <td>${formatCurrency(a.valorTotal)}</td>
+                    <td><span class="badge ${a.pago ? 'badge-paid' : 'badge-unpaid'}">${a.pago ? 'Pago' : 'Aberto'}</span></td>
+                    <td><span class="badge ${a.devolvido ? 'badge-returned' : 'badge-rented'}">${a.devolvido ? 'Devolvido' : 'Em uso'}</span></td>
+                    <td>
+                        ${a.notaFiscal ? 
+                            `<span class="badge ${a.notaFiscal.status === 'autorizada' ? 'bg-success' : 'bg-warning'}">
+                                ${a.notaFiscal.status === 'autorizada' ? 'Emitida' : 'Pendente'}
+                            </span>` : 
+                            `<button class="btn btn-sm btn-outline-info generate-real-invoice" data-id="${a.id}" title="Emitir NFe">
+                                <i class="bi bi-receipt"></i>
+                            </button>`}
+                    </td>
+                    <td>
+                        ${!a.pago ? `<button class="btn btn-sm btn-outline-success pay-rental" data-id="${a.id}" title="Registrar pagamento">
+                            <i class="bi bi-cash"></i>
+                        </button>` : ''}
+                        ${!a.devolvido ? `<button class="btn btn-sm btn-outline-primary return-rental" data-id="${a.id}" title="Registrar devolução">
+                            <i class="bi bi-arrow-return-left"></i>
+                        </button>` : ''}
+                        <button class="btn btn-sm btn-outline-danger delete-rental" data-id="${a.id}" title="Excluir aluguel">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        ${a.notaFiscal ? `<button class="btn btn-sm btn-outline-secondary view-invoice" data-id="${a.id}" title="Visualizar NFe">
+                            <i class="bi bi-eye"></i>
+                        </button>` : ''}
+                    </td>
+                `;
+                
+                table.appendChild(row);
+            }
+            
+            // Configura eventos para os botões
+            document.querySelectorAll('.pay-rental').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel) showPaymentRentalModal(aluguel);
+                });
+            });
+            
+            document.querySelectorAll('.return-rental').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel) showReturnModal(aluguel);
+                });
+            });
+            
+            document.querySelectorAll('.view-invoice').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel && aluguel.notaFiscal) showViewInvoiceModal(aluguel);
+                });
+            });
+        }
+
+        // Atualiza a tabela de aluguéis ativos
+        function updateActiveRentalsTable(alugueis) {
+            const table = document.getElementById('active-rentals').querySelector('tbody');
+            table.innerHTML = '';
+            
+            for (const a of alugueis) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${a.cliente}</td>
+                    <td>${a.produto}</td>
+                    <td>${formatDate(a.data)}</td>
+                    <td>${a.dias}</td>
+                    <td>${formatCurrency(a.valorTotal)}</td>
+                    <td><span class="badge ${a.pago ? 'bg-success' : 'bg-danger'}">${a.pago ? 'Pago' : 'Aberto'}</span></td>
+                    <td>
+                        ${a.notaFiscal ? 
+                            `<span class="badge ${a.notaFiscal.status === 'autorizada' ? 'bg-success' : 'bg-warning'}">
+                                ${a.notaFiscal.status === 'autorizada' ? 'Emitida' : 'Pendente'}
+                            </span>` : 
+                            `<button class="btn btn-sm btn-outline-info generate-real-invoice" data-id="${a.id}" title="Emitir NFe">
+                                <i class="bi bi-receipt"></i>
+                            </button>`}
+                    </td>
+                    <td>
+                        ${!a.pago ? `<button class="btn btn-sm btn-outline-success pay-rental" data-id="${a.id}" title="Registrar pagamento">
+                            <i class="bi bi-cash"></i>
+                        </button>` : ''}
+                        <button class="btn btn-sm btn-primary return-rental" data-id="${a.id}" title="Registrar devolução">
+                            <i class="bi bi-arrow-return-left"></i> Devolver
+                        </button>
+                        ${a.notaFiscal ? `<button class="btn btn-sm btn-outline-secondary view-invoice" data-id="${a.id}" title="Visualizar NFe">
+                            <i class="bi bi-eye"></i>
+                        </button>` : ''}
+                    </td>
+                `;
+                
+                table.appendChild(row);
+            }
+            
+            // Configura eventos para os botões
+            document.querySelectorAll('.pay-rental').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel) showPaymentRentalModal(aluguel);
+                });
+            });
+            
+            document.querySelectorAll('.return-rental').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel) showReturnModal(aluguel);
+                });
+            });
+            
+            document.querySelectorAll('.view-invoice').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel && aluguel.notaFiscal) showViewInvoiceModal(aluguel);
+                });
+            });
+        }
+
+        // Atualiza a tabela de dívidas
+        function updateDebtsTable(dividas) {
+            const table = document.getElementById('debts-table').querySelector('tbody');
+            table.innerHTML = '';
+            
+            for (const d of dividas) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${d.pessoa}</td>
+                    <td>${d.descricao}</td>
+                    <td>${formatDate(d.data)}</td>
+                    <td>${formatCurrency(d.valorTotal)}</td>
+                    <td>${formatCurrency(d.valorPago)}</td>
+                    <td><span class="badge ${d.pago ? 'bg-success' : 'bg-danger'}">${d.pago ? 'Pago' : 'Aberto'}</span></td>
+                    <td>
+                        ${!d.pago ? `<button class="btn btn-sm btn-outline-success pay-debt" data-id="${d.id}" title="Registrar pagamento">
+                            <i class="bi bi-cash"></i>
+                        </button>` : ''}
+                        <button class="btn btn-sm btn-outline-primary edit-debt" data-id="${d.id}" title="Editar dívida">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-debt" data-id="${d.id}" title="Excluir dívida">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                table.appendChild(row);
+            }
+            
+            // Configura eventos para os botões
+            document.querySelectorAll('.pay-debt').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const divida = DB.debts.find(d => d.id === id);
+                    if (divida) showPaymentModal(divida);
+                });
+            });
+            
+            document.querySelectorAll('.edit-debt').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const divida = DB.debts.find(d => d.id === id);
+                    if (divida) showEditDebtModal(divida);
+                });
+            });
+        }
+
+        // Atualiza a tabela de notas fiscais
+        function updateInvoicesTable() {
+            const table = document.getElementById('invoices-table').querySelector('tbody');
+            table.innerHTML = '';
+            
+            const alugueisComNota = DB.rentals.filter(r => r.notaFiscal);
+            
+            for (const a of alugueisComNota) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${a.notaFiscal.numero}</td>
+                    <td>${a.cliente}</td>
+                    <td>${formatCurrency(a.valorTotal)}</td>
+                    <td>${formatDate(a.notaFiscal.dataEmissao)}</td>
+                    <td><span class="badge ${a.notaFiscal.status === 'autorizada' ? 'bg-success' : 'bg-warning'}">
+                        ${a.notaFiscal.status === 'autorizada' ? 'Autorizada' : 'Pendente'}
+                    </span></td>
+                    <td class="chave-nfe">${formatarChaveNFe(a.notaFiscal.chave)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-invoice" data-id="${a.id}" title="Visualizar NFe">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary download-invoice" data-id="${a.id}" title="Baixar DANFE">
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </td>
+                `;
+                
+                table.appendChild(row);
+            }
+            
+            // Configura eventos para os botões
+            document.querySelectorAll('.view-invoice').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel && aluguel.notaFiscal) showViewInvoiceModal(aluguel);
+                });
+            });
+            
+            document.querySelectorAll('.download-invoice').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const aluguel = DB.rentals.find(r => r.id === id);
+                    if (aluguel && aluguel.notaFiscal && aluguel.notaFiscal.danfe) {
+                        const link = document.createElement('a');
+                        link.href = aluguel.notaFiscal.danfe;
+                        link.download = `DANFE-${aluguel.notaFiscal.numero}.pdf`;
+                        link.click();
+                    }
+                });
+            });
+        }
+
+        // Mostra o modal de pagamento de dívida
+        function showPaymentModal(divida) {
+            document.getElementById('payment-debt-id').value = divida.id;
+            document.getElementById('payment-person').value = divida.pessoa;
+            document.getElementById('payment-description').value = divida.descricao;
+            document.getElementById('payment-total').value = formatCurrency(divida.valorTotal);
+            document.getElementById('payment-already-paid').value = formatCurrency(divida.valorPago);
+            document.getElementById('payment-amount').value = '';
+            
+            new bootstrap.Modal(document.getElementById('paymentModal')).show();
+        }
+
+        // Mostra o modal de pagamento de aluguel
+        function showPaymentRentalModal(aluguel) {
+            document.getElementById('payment-rental-id').value = aluguel.id;
+            document.getElementById('payment-rental-client').value = aluguel.cliente;
+            document.getElementById('payment-rental-product').value = aluguel.produto;
+            document.getElementById('payment-rental-total').value = formatCurrency(aluguel.valorTotal);
+            document.getElementById('payment-rental-amount').value = '';
+            document.getElementById('payment-rental-full').checked = true;
+            document.getElementById('partial-payment-container').style.display = 'none';
+            
+            new bootstrap.Modal(document.getElementById('paymentRentalModal')).show();
+        }
+
+        // Mostra o modal de devolução
+        function showReturnModal(aluguel) {
+            document.getElementById('return-rental-id').value = aluguel.id;
+            document.getElementById('return-client').value = aluguel.cliente;
+            document.getElementById('return-product').value = aluguel.produto;
+            document.getElementById('return-date').value = formatDate(aluguel.data);
+            document.getElementById('return-days').value = aluguel.dias;
+            document.getElementById('return-total').value = formatCurrency(aluguel.valorTotal);
+            document.getElementById('return-payment').value = aluguel.pago ? 'Pago' : 'Pendente';
+            
+            new bootstrap.Modal(document.getElementById('returnModal')).show();
+        }
+
+        // Mostra o modal de NFe real
+        function showRealInvoiceModal(aluguel) {
+            document.getElementById('real-invoice-rental-id').value = aluguel.id;
+            document.getElementById('real-invoice-client').value = aluguel.cliente;
+            document.getElementById('real-invoice-product').value = aluguel.produto;
+            document.getElementById('real-invoice-days').value = aluguel.dias;
+            document.getElementById('real-invoice-quantity').value = aluguel.quantidade;
+            document.getElementById('real-invoice-total').value = formatCurrency(aluguel.valorTotal);
+            
+            // Resetar o modal para o passo 1
+            document.getElementById('invoice-step-1').style.display = 'block';
+            document.getElementById('invoice-step-2').style.display = 'none';
+            document.getElementById('invoice-step-3').style.display = 'none';
+            document.getElementById('invoice-generate-btn').style.display = 'block';
+            document.getElementById('invoice-finish-btn').style.display = 'none';
+            document.getElementById('invoice-cancel-btn').disabled = false;
+            
+            new bootstrap.Modal(document.getElementById('realInvoiceModal')).show();
+        }
+
+        // Mostra o modal de visualização de NFe
+        function showViewInvoiceModal(aluguel) {
+            currentNFeData = aluguel.notaFiscal;
+            
+            document.getElementById('view-invoice-number').textContent = aluguel.notaFiscal.numero;
+            document.getElementById('view-invoice-series').textContent = '1'; // Série padrão
+            document.getElementById('view-invoice-date').textContent = formatDate(aluguel.notaFiscal.dataEmissao);
+            document.getElementById('view-invoice-status').textContent = aluguel.notaFiscal.status === 'autorizada' ? 'Autorizada' : 'Pendente';
+            document.getElementById('view-invoice-status').className = `badge nfe-status-badge ${aluguel.notaFiscal.status === 'autorizada' ? 'bg-success' : 'bg-warning'}`;
+            document.getElementById('view-invoice-protocol').textContent = aluguel.notaFiscal.protocolo || 'N/A';
+            document.getElementById('view-invoice-total').textContent = formatCurrency(aluguel.valorTotal);
+            document.getElementById('view-invoice-key').textContent = formatarChaveNFe(aluguel.notaFiscal.chave);
+            document.getElementById('view-invoice-client').textContent = aluguel.cliente;
+            document.getElementById('view-invoice-client-doc').textContent = ''; // Seria preenchido na emissão real
+            document.getElementById('view-invoice-product').textContent = aluguel.produto;
+            document.getElementById('view-invoice-unit-value').textContent = formatCurrency(aluguel.valorDiaria);
+            document.getElementById('view-invoice-quantity').textContent = aluguel.quantidade;
+            document.getElementById('view-invoice-obs').textContent = ''; // Observações da NFe
+            
+            new bootstrap.Modal(document.getElementById('viewInvoiceModal')).show();
+        }
+
+        // Função para emitir NFe real
+        async function emitirNFeReal() {
+            const rentalId = parseInt(document.getElementById('real-invoice-rental-id').value);
+            const aluguel = DB.rentals.find(r => r.id === rentalId);
+            
+            if (!aluguel) {
+                showToast('Aluguel não encontrado!', 'danger');
+                return;
+            }
+            
+            const clientDoc = document.getElementById('real-invoice-client-doc').value;
+            const cfop = document.getElementById('real-invoice-cfop').value;
+            const obs = document.getElementById('real-invoice-obs').value;
+            
+            // Validar CPF/CNPJ
+            if (!validarDocumento(clientDoc)) {
+                showToast('CPF/CNPJ inválido!', 'danger');
+                return;
+            }
+            
+            // Mudar para o passo 2 (processamento)
+            document.getElementById('invoice-step-1').style.display = 'none';
+            document.getElementById('invoice-step-2').style.display = 'block';
+            document.getElementById('invoice-generate-btn').style.display = 'none';
+            document.getElementById('invoice-cancel-btn').disabled = true;
+            
+            try {
+                // Atualizar status
+                document.getElementById('invoice-status').textContent = 'Preparando dados da NFe...';
+                document.getElementById('invoice-progress').style.width = '20%';
+                
+                // Montar objeto da NFe conforme especificação do Fiscal Flex
+                const nfeData = {
+                    ambiente: "2", // 1=Produção, 2=Homologação (mude para 1 em produção)
+                    natureza_operacao: "LOCAÇÃO",
+                    tipo_documento: clientDoc.length === 11 ? "1" : "2", // 1=CPF, 2=CNPJ
+                    cliente: {
+                        nome: aluguel.cliente,
+                        documento: clientDoc,
+                        endereco: {
+                            logradouro: "Rua do Cliente",
+                            numero: "123",
+                            bairro: "Centro",
+                            codigo_municipio: "3550308", // Código IBGE da cidade
+                            uf: "SP",
+                            cep: "01001000",
+                            telefone: "11999999999"
+                        }
+                    },
+                    itens: [{
+                        codigo: "001",
+                        descricao: `Locação de ${aluguel.produto}`,
+                        ncm: "84798999", // NCM para locação de máquinas
+                        cfop: cfop,
+                        unidade: "UN",
+                        quantidade: aluguel.quantidade,
+                        valor_unitario: aluguel.valorDiaria,
+                        valor_total: aluguel.valorTotal,
+                        informacoes_adicionais: obs
+                    }],
+                    forma_pagamento: [{
+                        forma: "99", // 99=Outros
+                        valor: aluguel.valorTotal
+                    }]
+                };
+                
+                // Atualizar status
+                document.getElementById('invoice-status').textContent = 'Enviando para Fiscal Flex...';
+                document.getElementById('invoice-progress').style.width = '40%';
+                
+                // Enviar para API do Fiscal Flex
+                const response = await fetch('https://api.fiscalflex.com.br/nfe/emissao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${fiscalFlexToken}`
+                    },
+                    body: JSON.stringify(nfeData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Atualizar status
+                    document.getElementById('invoice-status').textContent = 'Processando na SEFAZ...';
+                    document.getElementById('invoice-progress').style.width = '70%';
+                    
+                    // Verificar status da NFe
+                    const statusResponse = await verificarStatusNFe(result.protocolo);
+                    
+                    if (statusResponse.status === 'autorizada') {
+                        // NFe autorizada
+                        document.getElementById('invoice-progress').style.width = '100%';
+                        document.getElementById('invoice-status').textContent = 'NFe autorizada!';
+                        
+                        // Salvar dados da NFe no aluguel
+                        aluguel.notaFiscal = {
+                            numero: statusResponse.numero,
+                            chave: statusResponse.chave,
+                            dataEmissao: statusResponse.data_emissao,
+                            protocolo: result.protocolo,
+                            status: 'autorizada',
+                            xml: statusResponse.xml,
+                            danfe: statusResponse.danfe
+                        };
+                        
+                        DB.save();
+                        
+                        // Mostrar passo 3 (sucesso)
+                        document.getElementById('invoice-step-2').style.display = 'none';
+                        document.getElementById('invoice-step-3').style.display = 'block';
+                        document.getElementById('invoice-finish-btn').style.display = 'block';
+                        document.getElementById('invoice-cancel-btn').disabled = false;
+                        
+                        // Preencher dados da NFe emitida
+                        document.getElementById('invoice-number').textContent = statusResponse.numero;
+                        document.getElementById('invoice-key').textContent = formatarChaveNFe(statusResponse.chave);
+                        document.getElementById('invoice-emission-date').textContent = new Date(statusResponse.data_emissao).toLocaleString('pt-BR');
+                        
+                        // Atualizar a tabela
+                        updateRentalsTable(DB.rentals);
+                        updateInvoicesTable();
+                        
+                        currentNFeData = statusResponse;
+                    } else {
+                        throw new Error('NFe não autorizada pela SEFAZ');
+                    }
+                } else {
+                    throw new Error(result.message || 'Erro ao emitir NFe');
+                }
+            } catch (error) {
+                console.error('Erro na emissão da NFe:', error);
+                document.getElementById('invoice-step-2').style.display = 'none';
+                document.getElementById('invoice-step-1').style.display = 'block';
+                document.getElementById('invoice-generate-btn').style.display = 'block';
+                document.getElementById('invoice-cancel-btn').disabled = false;
+                
+                showToast(`Erro na emissão: ${error.message}`, 'danger');
+            }
+        }
+
+        // Função para verificar status da NFe
+        async function verificarStatusNFe(protocolo) {
+            let tentativas = 0;
+            const maxTentativas = 10;
+            
+            while (tentativas < maxTentativas) {
+                try {
+                    const response = await fetch(`https://api.fiscalflex.com.br/nfe/status/${protocolo}`, {
+                        headers: {
+                            'Authorization': `Bearer ${fiscalFlexToken}`
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'autorizada') {
+                        return result;
+                    } else if (result.status === 'rejeitada') {
+                        throw new Error('NFe rejeitada pela SEFAZ');
+                    }
+                    
+                    // Aguardar antes de tentar novamente
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    tentativas++;
+                } catch (error) {
+                    throw error;
+                }
+            }
+            
+            throw new Error('Tempo limite de verificação excedido');
+        }
+
+        // Funções auxiliares
+        function validarDocumento(doc) {
+            // Implementação real de validação de CPF/CNPJ
+            doc = doc.replace(/\D/g, '');
+            return doc.length === 11 || doc.length === 14;
+        }
+
+        function formatarChaveNFe(chave) {
+            return chave.replace(/(\d{4})(\d{4})(\d{4})(\d{4})(\d{4})(\d{4})(\d{4})(\d{4})(\d{4})(\d{4})(\d{4})/, '$1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        function showToast(message, type = 'success') {
+            // Remove toast existente se houver
+            const existingToast = document.getElementById('custom-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // Cria o elemento toast
+            const toast = document.createElement('div');
+            toast.id = 'custom-toast';
+            toast.className = `toast show align-items-center text-white bg-${type}`;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.zIndex = '9999';
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Remove o toast após 5 segundos
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
